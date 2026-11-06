@@ -80,7 +80,7 @@ export async function runSmoke(
       integrationSmoke: INTEGRATION_SMOKE,
     });
   } catch (error) {
-    const body = toErrorBody(error, secrets, false);
+    const body = toErrorBody(error, false);
     writeResult(stdout, { ...body, integrationSmoke: INTEGRATION_SMOKE }, secrets);
     diagnostic(stderr, body.error.message, secrets);
     return error instanceof AssessmentError ? error.exitCode : 1;

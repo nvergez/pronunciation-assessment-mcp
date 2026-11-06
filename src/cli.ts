@@ -80,7 +80,7 @@ export async function runCli(
       stderr,
     });
   } catch (error) {
-    const body = toErrorBody(error, secrets, Boolean(env.PA_SYNTHETIC_RESPONSE_FILE?.trim()));
+    const body = toErrorBody(error, Boolean(env.PA_SYNTHETIC_RESPONSE_FILE?.trim()));
     writeResult(stdout, body, secrets);
     diagnostic(stderr, body.error.message, secrets);
     if (!argsWereHelp(argv)) {

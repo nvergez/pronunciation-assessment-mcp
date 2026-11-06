@@ -62,6 +62,7 @@ function fixture(secret: string): unknown {
               Prosody: {
                 Break: {
                   Error: secret,
+                  [secret]: "kept-label",
                   Unrelated: 12,
                   Missing: null,
                 },
@@ -115,7 +116,13 @@ test("mapped assessment keeps provider text while CLI and MCP output hide the ke
       assessment: {
         displayText: string;
         scores: { accuracy: number; fluency: number; completeness: number; prosody: number | null; pronunciation: number };
-        words: Array<{ feedback: { Prosody: { Break: { Error: string; Unrelated: number; Missing: null } } } }>;
+        words: Array<{
+          feedback: {
+            Prosody: {
+              Break: { Error: string; "[redacted]": string; Unrelated: number; Missing: null };
+            };
+          };
+        }>;
       };
     };
     assert.equal(body.ok, true);
@@ -128,6 +135,8 @@ test("mapped assessment keeps provider text while CLI and MCP output hide the ke
     assert.equal(body.assessment.scores.prosody, null);
     assert.equal(body.assessment.scores.pronunciation, 64);
     assert.equal(body.assessment.words[0]?.feedback.Prosody.Break.Error, "[redacted]");
+    assert.equal(body.assessment.words[0]?.feedback.Prosody.Break["[redacted]"], "kept-label");
+    assert.equal(Object.hasOwn(body.assessment.words[0]?.feedback.Prosody.Break ?? {}, KEY), false);
     assert.equal(body.assessment.words[0]?.feedback.Prosody.Break.Unrelated, 12);
     assert.equal(body.assessment.words[0]?.feedback.Prosody.Break.Missing, null);
 
@@ -167,6 +176,7 @@ test("mapped assessment keeps provider text while CLI and MCP output hide the ke
       assert.equal(mcpBody.assessment.scores.accuracy, 91);
       assert.equal(mcpBody.assessment.scores.prosody, null);
       assert.equal(mcpBody.assessment.words[0]?.feedback.Prosody.Break.Error, "[redacted]");
+      assert.equal(mcpBody.assessment.words[0]?.feedback.Prosody.Break["[redacted]"], "kept-label");
       assert.equal(mcpBody.assessment.words[0]?.feedback.Prosody.Break.Unrelated, 12);
     } finally {
       await client.close();

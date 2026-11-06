@@ -1,28 +1,28 @@
 import { AssessmentError } from "./errors.js";
 import { stringifyResult } from "./json.js";
-import { redactText, redactUnknown } from "./redact.js";
+import { redactUnknown } from "./redact.js";
 import type { ErrorBody, IntegrationSmoke, ResultBody, SuccessBody } from "./types.js";
 import type { Writable } from "node:stream";
 
-export function toErrorBody(error: unknown, secrets: readonly string[], synthetic: boolean): ErrorBody {
+export function toErrorBody(error: unknown, synthetic: boolean): ErrorBody {
   if (error instanceof AssessmentError) {
     const body: ErrorBody = {
       ok: false,
       synthetic,
       error: {
         code: error.code,
-        message: redactText(error.message, secrets),
+        message: error.message,
       },
     };
     if (error.details) {
-      const details = redactUnknown(error.details, secrets);
+      const details = error.details;
       if (details && typeof details === "object" && !Array.isArray(details)) {
         body.error.details = details as Record<string, unknown>;
       }
     }
     return body;
   }
-  const message = error instanceof Error ? redactText(error.message, secrets) : "Unexpected failure.";
+  const message = error instanceof Error ? error.message : "Unexpected failure.";
   return {
     ok: false,
     synthetic,
@@ -60,14 +60,13 @@ export function presentResult(body: ResultBody, integrationSmoke: IntegrationSmo
 
 export function writeResult(stdout: Writable, body: ResultBody, secrets: readonly string[]): void {
   try {
-    stdout.write(`${stringifyResult(body)}\n`);
+    stdout.write(`${stringifyResult(redactUnknown(body, secrets))}\n`);
   } catch {
     const fallback = toErrorBody(
       new AssessmentError("INTERNAL", "Result could not be serialized."),
-      secrets,
       body.synthetic,
     );
-    stdout.write(`${stringifyResult(fallback)}\n`);
+    stdout.write(`${stringifyResult(redactUnknown(fallback, secrets))}\n`);
   }
 }
 

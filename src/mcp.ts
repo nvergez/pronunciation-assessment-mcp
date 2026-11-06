@@ -9,7 +9,7 @@ import { assessWithEnv } from "./execute.js";
 import { diagnostic } from "./log.js";
 import { stringifyResult } from "./json.js";
 import { toErrorBody } from "./output.js";
-import { secretsFromEnv } from "./redact.js";
+import { redactUnknown, secretsFromEnv } from "./redact.js";
 import { packageVersion } from "./version.js";
 
 const TOOL_DESCRIPTION = [
@@ -64,13 +64,13 @@ export function createPronunciationServer(env: NodeJS.ProcessEnv = process.env):
           env,
           process.stderr,
         );
-        return { content: [{ type: "text", text: stringifyResult(body) }] };
+        return { content: [{ type: "text", text: stringifyResult(redactUnknown(body, secrets)) }] };
       } catch (error) {
-        const body = toErrorBody(error, secrets, synthetic);
+        const body = toErrorBody(error, synthetic);
         diagnostic(process.stderr, body.error.message, secrets);
         return {
           isError: true,
-          content: [{ type: "text", text: stringifyResult(body) }],
+          content: [{ type: "text", text: stringifyResult(redactUnknown(body, secrets)) }],
         };
       }
     },

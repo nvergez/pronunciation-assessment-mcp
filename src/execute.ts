@@ -36,7 +36,7 @@ export async function executeAssessment(options: {
     writeResult(options.stdout, presentResult(body, options.integrationSmoke), secrets);
     return 0;
   } catch (error) {
-    const body = toErrorBody(error, secrets, synthetic);
+    const body = toErrorBody(error, synthetic);
     const presented = presentResult(body, options.integrationSmoke);
     writeResult(options.stdout, presented, secrets);
     diagnostic(options.stderr, body.error.message, secrets);
