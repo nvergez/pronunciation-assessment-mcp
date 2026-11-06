@@ -34,7 +34,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "test": "npm run build && node --import tsx --test tests/*.test.ts",
     "verify:azure": "node dist/smoke.js",
-    "pack:tarball": "npm run build && npm pack --pack-destination ./artifacts"
+    "pack:tarball": "npm run build && mkdir -p ./artifacts && npm pack --pack-destination ./artifacts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

@@ -66,6 +66,27 @@ test("MCP stdio client lists and calls assess_pronunciation", async () => {
     assert.equal(errorBody.ok, false);
     assert.equal(errorBody.error.code, "INVALID_AUDIO");
 
+    const rejectedProsody = await client.callTool({
+      name: "assess_pronunciation",
+      arguments: {
+        audioPath,
+        referenceText: "hola",
+        locale: "es-ES",
+        enableProsody: true,
+      },
+    });
+    assert.equal(rejectedProsody.isError, true);
+    const prosodyBody = JSON.parse(textOf(rejectedProsody.content)) as {
+      ok: boolean;
+      error: { code: string; message: string };
+    };
+    assert.equal(prosodyBody.ok, false);
+    assert.equal(prosodyBody.error.code, "PROSODY_UNSUPPORTED");
+    assert.equal(
+      prosodyBody.error.message,
+      "Prosody assessment is documented for en-US only. The request to enable it for es-ES was rejected.",
+    );
+
     const stderrText = Buffer.concat(stderrChunks).toString("utf8");
     assert.equal(stderrText.includes(TEST_KEY), false);
     assert.match(stderrText, /Azure Speech was not called/);

@@ -167,7 +167,11 @@ test("builds the en-US request and refuses unsupported prosody or alphabets", ()
   );
   assert.throws(
     () => buildAssessmentRequest({ referenceText: "hola", locale: "es-ES", enableProsody: true }),
-    (error: unknown) => error instanceof AssessmentError && error.code === "PROSODY_UNSUPPORTED",
+    (error: unknown) =>
+      error instanceof AssessmentError &&
+      error.code === "PROSODY_UNSUPPORTED" &&
+      error.message ===
+        "Prosody assessment is documented for en-US only. The request to enable it for es-ES was rejected.",
   );
   assert.throws(
     () => buildAssessmentRequest({ referenceText: "hola", locale: "es-ES", phonemeAlphabet: "IPA" }),

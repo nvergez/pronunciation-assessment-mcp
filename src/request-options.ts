@@ -72,7 +72,7 @@ export function buildAssessmentRequest(input: {
   if (input.enableProsody === true && !prosodySupportedForLocale) {
     throw new AssessmentError(
       "PROSODY_UNSUPPORTED",
-      "Prosody assessment is documented for en-US only and was not requested for this locale.",
+      `Prosody assessment is documented for en-US only. The request to enable it for ${localeInput} was rejected.`,
       { details: { locale: localeInput } },
     );
   }
