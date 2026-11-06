@@ -1,0 +1,14 @@
+node_modules/
+dist/
+artifacts/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+.DS_Store
+*.pem
+*.key
+*.p12
+*.pfx
+agent-tools/

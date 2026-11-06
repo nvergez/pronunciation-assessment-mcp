@@ -1,0 +1,49 @@
+{
+  "name": "pronunciation-assessment-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local stdio MCP server and CLI for Azure Speech pronunciation assessment.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "pronunciation-assessment-mcp": "./dist/mcp.js",
+    "pronunciation-assess": "./dist/cli.js",
+    "pronunciation-assess-smoke": "./dist/smoke.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "samples/whatstheweatherlike.wav",
+    "samples/NOTICE",
+    "LICENSE",
+    "README.md",
+    ".env.example"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "test": "npm run build && node --import tsx --test tests/*.test.ts",
+    "verify:azure": "node dist/smoke.js",
+    "pack:tarball": "npm run build && mkdir -p ./artifacts && npm pack --pack-destination ./artifacts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "microsoft-cognitiveservices-speech-sdk": "1.53.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.15",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}
