@@ -7,6 +7,8 @@ description: Run a real Azure Speech pronunciation-assessment smoke when SPEECH_
 
 Unit tests and `PA_SYNTHETIC_RESPONSE_FILE` do not call Azure. They are not a live validation.
 
+`--provider speechace` is a separate scorer. This smoke does not call Speechace. `PA_SPEECHACE_RESPONSE_FILE` does not call Speechace either.
+
 The live command sends audio and reference text to the caller's Azure Speech resource. Read `SPEECH_KEY` from the environment. Do not print it, copy it into a file, or pass it as an argument. Do not create Azure resources, change pricing tiers, or deploy anything.
 
 ## Configuration

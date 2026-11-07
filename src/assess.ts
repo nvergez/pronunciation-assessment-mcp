@@ -7,9 +7,13 @@ import { mapAzureAssessment } from "./map-result.js";
 import { DEFAULT_TIMEOUT_MS, SPEECH_SDK_VERSION } from "./limits.js";
 import { redactText, secretsFromEnv } from "./redact.js";
 import { buildAssessmentRequest, validateTimeout } from "./request-options.js";
+import { assessSpeechace } from "./speechace.js";
 import type { AssessDeps, AssessInput, SuccessBody } from "./types.js";
 
 export async function assessPronunciation(input: AssessInput, deps: AssessDeps): Promise<SuccessBody> {
+  if ((input.provider ?? "azure") === "speechace") {
+    return assessSpeechace(input, deps);
+  }
   const secrets = secretsFromEnv(deps.env);
   const audio = await loadLocalWav(input.audioPath);
   const request = buildAssessmentRequest({
@@ -86,16 +90,19 @@ export async function assessPronunciation(input: AssessInput, deps: AssessDeps):
       assessment,
       provider: {
         name: deps.mode === "synthetic" ? "synthetic-fixture" : "azure-speech",
+        scoring: "azure",
         azureCalled: deps.mode === "azure",
+        speechaceCalled: false,
         sdkVersion: deps.mode === "azure" ? SPEECH_SDK_VERSION : null,
         region: credentials.region,
         endpointHost: credentials.endpointHost,
         connection: credentials.connection,
+        dialect: null,
         resultReason: result.resultReason,
         resultId: result.resultId,
         sessionId: result.sessionId,
       },
-      notes: notesFor(deps.mode, request.enableProsodyAssessment, request.prosodySupportedForLocale),
+      notes: notesFor(deps.mode === "azure" ? "azure" : "synthetic", request.enableProsodyAssessment, request.prosodySupportedForLocale),
     };
   } catch (error) {
     if (controller.signal.aborted) {

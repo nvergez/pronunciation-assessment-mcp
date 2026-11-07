@@ -1,5 +1,5 @@
 const MARKER = "[redacted]";
-const KEY_QUERY = /(?:Ocp-Apim-Subscription-Key|subscription[-_]?key)=([^&\s"]+)/gi;
+const KEY_QUERY = /(?:Ocp-Apim-Subscription-Key|subscription[-_]?key|(?:^|[?&])key)=([^&\s"]+)/gi;
 
 export function redactText(input: string, secrets: readonly string[]): string {
   const active = [...new Set(secrets.filter((secret) => secret.length > 0))].sort(
@@ -70,6 +70,8 @@ function isPlainObject(value: object): value is Record<string, unknown> {
 }
 
 export function secretsFromEnv(env: NodeJS.ProcessEnv): string[] {
-  const key = env.SPEECH_KEY?.trim() ?? "";
-  return key.length > 0 ? [key] : [];
+  const secrets = [env.SPEECH_KEY, env.SPEECHACE_API_KEY]
+    .map((value) => value?.trim() ?? "")
+    .filter((value) => value.length > 0);
+  return [...new Set(secrets)];
 }

@@ -1,0 +1,169 @@
+{
+  "status": "success",
+  "quota_remaining": -1,
+  "text_score": {
+    "text": "Some parents admire famous athletes as strong role models, so they name their children after them.",
+    "word_score_list": [
+      {
+        "word": "Some",
+        "quality_score": 99,
+        "phone_score_list": [
+          {
+            "phone": "s",
+            "stress_level": null,
+            "extent": [
+              9,
+              27
+            ],
+            "quality_score": 98.66666666666667,
+            "word_extent": [
+              0,
+              1
+            ],
+            "sound_most_like": "s"
+          },
+          {
+            "phone": "ah",
+            "stress_level": 1,
+            "extent": [
+              27,
+              36
+            ],
+            "quality_score": 100,
+            "stress_score": 100,
+            "predicted_stress_level": 1,
+            "word_extent": [
+              1,
+              2
+            ],
+            "sound_most_like": "ah"
+          },
+          {
+            "phone": "m",
+            "stress_level": null,
+            "extent": [
+              36,
+              42
+            ],
+            "quality_score": 99.5,
+            "word_extent": [
+              2,
+              3
+            ],
+            "sound_most_like": "m"
+          }
+        ],
+        "syllable_score_list": [
+          {
+            "phone_count": 3,
+            "stress_level": 1,
+            "letters": "some",
+            "quality_score": 99,
+            "stress_score": 100,
+            "predicted_stress_level": 1,
+            "extent": [
+              9,
+              42
+            ]
+          }
+        ]
+      },
+      {
+        "word": "strong",
+        "quality_score": 100,
+        "phone_score_list": [
+          {
+            "phone": "s",
+            "stress_level": null,
+            "extent": [
+              240,
+              246
+            ],
+            "quality_score": 100,
+            "word_extent": [
+              0,
+              1
+            ],
+            "sound_most_like": "s"
+          },
+          {
+            "phone": "t",
+            "stress_level": null,
+            "extent": [
+              246,
+              252
+            ],
+            "quality_score": 100,
+            "word_extent": [
+              1,
+              2
+            ],
+            "sound_most_like": "t"
+          },
+          {
+            "phone": "r",
+            "stress_level": null,
+            "extent": [
+              252,
+              258
+            ],
+            "quality_score": 100,
+            "word_extent": [
+              2,
+              3
+            ],
+            "sound_most_like": "r"
+          },
+          {
+            "phone": "ao",
+            "stress_level": 1,
+            "extent": [
+              258,
+              267
+            ],
+            "quality_score": 99.33333333333333,
+            "stress_score": 100,
+            "predicted_stress_level": 0,
+            "word_extent": [
+              3,
+              4
+            ],
+            "sound_most_like": "ao"
+          },
+          {
+            "phone": "ng",
+            "stress_level": null,
+            "extent": [
+              267,
+              273
+            ],
+            "quality_score": 100,
+            "word_extent": [
+              4,
+              6
+            ],
+            "sound_most_like": "ng"
+          }
+        ],
+        "syllable_score_list": [
+          {
+            "phone_count": 5,
+            "stress_level": 1,
+            "letters": "strong",
+            "quality_score": 100,
+            "stress_score": 100,
+            "predicted_stress_level": 0,
+            "extent": [
+              240,
+              273
+            ]
+          }
+        ]
+      }
+    ],
+    "speechace_score": {
+      "pronunciation": 99
+    }
+  },
+  "version": "9.3"
+}

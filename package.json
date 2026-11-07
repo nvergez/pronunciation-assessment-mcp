@@ -2,7 +2,7 @@
   "name": "pronunciation-assessment-mcp",
   "version": "0.1.0",
   "private": true,
-  "description": "Local stdio MCP server and CLI for Azure Speech pronunciation assessment.",
+  "description": "Local stdio MCP server and CLI for pronunciation assessment with Azure Speech or Speechace.",
   "type": "module",
   "license": "MIT",
   "engines": {
