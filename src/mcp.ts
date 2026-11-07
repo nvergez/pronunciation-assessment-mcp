@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { assessWithEnv } from "./execute.js";
+import { assessWithEnv, fixtureEnabled, selectedProvider } from "./execute.js";
 import { diagnostic } from "./log.js";
 import { stringifyResult } from "./json.js";
 import { toErrorBody } from "./output.js";
@@ -13,13 +13,15 @@ import { redactUnknown, secretsFromEnv } from "./redact.js";
 import { packageVersion } from "./version.js";
 
 const TOOL_DESCRIPTION = [
-  "Assess pronunciation of a local WAV recording against known reference text using Azure Speech Pronunciation Assessment.",
-  "Sends the audio and reference text to the configured Azure Speech resource.",
-  "Returns word and phoneme accuracy, timing, and fluency, completeness, and prosody scores when Azure returns them.",
-  "Does not invent a spoken phoneme or a correction. nBestPhonemes are Azure hypotheses when present.",
-  "Default locale is en-US. Accepts only a local filesystem path, not a URL.",
-  "Scores are HundredMark model scores from 0 to 100. They are not an absolute pronunciation measure and they are not a human rating.",
-  "Requires SPEECH_KEY and SPEECH_REGION in the server environment. The key is never returned.",
+  "Assess pronunciation of a local WAV recording against known reference text.",
+  "The default provider is Azure Speech Pronunciation Assessment. Set provider to speechace to score with the Speechace text API instead.",
+  "Sends the audio and reference text to the selected provider.",
+  "Returns word and phoneme scores in one shape. For Azure, nBestPhonemes are service hypotheses when present.",
+  "For Speechace, phoneme accuracy is quality_score and nBestPhonemes is sound_most_like, the heard phone, with a null score.",
+  "Does not invent a spoken phoneme or a correction.",
+  "Default locale is en-US. Speechace dialect defaults to en-us and also accepts en-GB. Accepts only a local filesystem path, not a URL.",
+  "Scores are model scores from 0 to 100. They are not an absolute pronunciation measure and they are not a human rating.",
+  "Azure requires SPEECH_KEY and SPEECH_REGION. Speechace requires SPEECHACE_API_KEY. Keys are never returned.",
 ].join(" ");
 
 export function createPronunciationServer(env: NodeJS.ProcessEnv = process.env): McpServer {
@@ -37,7 +39,8 @@ export function createPronunciationServer(env: NodeJS.ProcessEnv = process.env):
       inputSchema: {
         audioPath: z.string().min(1).describe("Local filesystem path to a WAV PCM file. URLs are rejected."),
         referenceText: z.string().min(1).describe("Known reference text for scripted assessment."),
-        locale: z.string().min(1).optional().describe("BCP-47 pronunciation-assessment locale. Default en-US."),
+        provider: z.enum(["azure", "speechace"]).optional().describe("Scoring provider. Default azure. speechace uses SPEECHACE_API_KEY and dialect en-us."),
+        locale: z.string().min(1).optional().describe("BCP-47 locale. Default en-US. Speechace accepts en-US (en-us) and en-GB (en-gb)."),
         phonemeAlphabet: z.enum(["IPA", "SAPI"]).optional().describe("Default IPA for en-US and SAPI for zh-CN."),
         enableProsody: z.boolean().optional().describe("Request prosody. Supported for en-US only. Defaults to true for en-US."),
         timeoutMs: z.number().int().optional().describe("Local timeout in milliseconds."),
@@ -50,7 +53,8 @@ export function createPronunciationServer(env: NodeJS.ProcessEnv = process.env):
     },
     async (args) => {
       const secrets = secretsFromEnv(env);
-      const synthetic = Boolean(env.PA_SYNTHETIC_RESPONSE_FILE?.trim());
+      const provider = selectedProvider({ provider: args.provider });
+      const synthetic = fixtureEnabled(env, provider);
       try {
         const body = await assessWithEnv(
           {
@@ -60,6 +64,7 @@ export function createPronunciationServer(env: NodeJS.ProcessEnv = process.env):
             phonemeAlphabet: args.phonemeAlphabet,
             enableProsody: args.enableProsody,
             timeoutMs: args.timeoutMs,
+            provider,
           },
           env,
           process.stderr,

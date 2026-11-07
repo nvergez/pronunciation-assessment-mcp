@@ -1,0 +1,61 @@
+{
+  "status": "success",
+  "text_score": {
+    "text": "this",
+    "word_score_list": [
+      {
+        "word": "this",
+        "quality_score": 90,
+        "phone_score_list": [
+          {
+            "phone": "dh",
+            "stress_level": null,
+            "extent": [
+              804,
+              813
+            ],
+            "quality_score": 78.33333333333333,
+            "sound_most_like": "l"
+          },
+          {
+            "phone": "ih",
+            "stress_level": 1,
+            "extent": [
+              813,
+              816
+            ],
+            "quality_score": 93,
+            "stress_score": 100,
+            "predicted_stress_level": 0,
+            "sound_most_like": "ih"
+          },
+          {
+            "phone": "s",
+            "stress_level": null,
+            "extent": [
+              816,
+              825
+            ],
+            "quality_score": 100,
+            "sound_most_like": "s"
+          }
+        ],
+        "syllable_score_list": [
+          {
+            "phone_count": 3,
+            "stress_level": 1,
+            "letters": "this",
+            "quality_score": 90,
+            "stress_score": 100,
+            "predicted_stress_level": 0,
+            "extent": [
+              804,
+              825
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "version": "9.3"
+}

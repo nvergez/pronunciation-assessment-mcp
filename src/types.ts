@@ -2,6 +2,8 @@ import type { Writable } from "node:stream";
 import type { SpeechBackend } from "./backend.js";
 import type { PhonemeAlphabet } from "./request-options.js";
 
+export type ScoringProvider = "azure" | "speechace";
+
 export interface AssessInput {
   audioPath: string;
   referenceText: string;
@@ -9,13 +11,17 @@ export interface AssessInput {
   phonemeAlphabet?: PhonemeAlphabet | undefined;
   enableProsody?: boolean | undefined;
   timeoutMs?: number | undefined;
+  /** Default azure. speechace scores with the Speechace text API. */
+  provider?: ScoringProvider | undefined;
 }
 
 export interface AssessDeps {
   env: NodeJS.ProcessEnv;
   stderr: Writable;
   backend: SpeechBackend;
-  mode: "azure" | "synthetic";
+  mode: "azure" | "speechace" | "synthetic";
+  /** Used by the Speechace client. Tests pass a stub. The default is global fetch. */
+  fetchImpl?: typeof fetch | undefined;
 }
 
 export interface Timing {
@@ -81,8 +87,9 @@ export interface SuccessBody {
     phonemeAlphabet: PhonemeAlphabet | null;
     gradingSystem: "HundredMark";
     granularity: "Phoneme";
-    dimension: "Comprehensive";
-    enableMiscue: true;
+    /** Azure SDK dimension. Null for Speechace, which has no Comprehensive dimension. */
+    dimension: "Comprehensive" | null;
+    enableMiscue: boolean;
     enableProsodyAssessment: boolean;
     nBestPhonemeCount: number | null;
     prosodySupportedForLocale: boolean;
@@ -107,12 +114,17 @@ export interface SuccessBody {
     words: WordResult[] | null;
   };
   provider: {
-    name: "azure-speech" | "synthetic-fixture";
+    name: "azure-speech" | "speechace" | "synthetic-fixture";
+    /** Scorer selected by the caller. Fixture mode keeps this and does not call either provider. */
+    scoring: ScoringProvider;
     azureCalled: boolean;
+    speechaceCalled: boolean;
     sdkVersion: string | null;
     region: string | null;
     endpointHost: string | null;
     connection: "subscription" | "endpoint" | null;
+    /** Speechace dialect, for example en-us. Null for Azure. */
+    dialect: string | null;
     resultReason: string | null;
     resultId: string | null;
     sessionId: string | null;

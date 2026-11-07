@@ -9,29 +9,35 @@ import { diagnostic } from "./log.js";
 import { toErrorBody, writeResult } from "./output.js";
 import { secretsFromEnv } from "./redact.js";
 import type { PhonemeAlphabet } from "./request-options.js";
+import type { ScoringProvider } from "./types.js";
 import { packageVersion } from "./version.js";
 
 const USAGE = `pronunciation-assess --audio <local.wav> --reference <text> [options]
 
-Assess a local WAV recording against known reference text with Azure Speech.
+Assess a local WAV recording against known reference text.
+The default provider is Azure Speech. --provider speechace uses Speechace text scoring.
 JSON is written to stdout. Diagnostics are written to stderr.
-The audio and reference text are sent to Azure Speech. The subscription key is not printed.
+The audio and reference text are sent to the selected provider. Keys are not printed.
 
 Options:
   --audio <path>              Local WAV PCM file (16 kHz, 16-bit, mono, at most 30 s)
   --reference <text>          Known reference text for scripted assessment
-  --locale <bcp47>            Default en-US
+  --provider <azure|speechace>
+                              Default azure
+  --locale <bcp47>            Default en-US. Speechace accepts en-US (dialect en-us) and en-GB (en-gb).
   --phoneme-alphabet <IPA|SAPI>
-  --no-prosody                Do not request prosody (prosody is en-US only)
+  --no-prosody                Do not request prosody (Azure, en-US only). Speechace text scoring has no prosody score.
   --timeout-ms <ms>           Local timeout, default 90000
   --help                      Show this help
   --version                   Print the package version
 
 Environment:
-  SPEECH_KEY                  Required. Never printed.
-  SPEECH_REGION               Required. Your Speech resource region, for example westus.
+  SPEECH_KEY                  Required for azure. Never printed.
+  SPEECH_REGION               Required for azure. Your Speech resource region, for example westus.
   SPEECH_ENDPOINT             Optional https endpoint. The regional portal host must match SPEECH_REGION.
-  PA_SYNTHETIC_RESPONSE_FILE  Test seam only. Does not call Azure and marks the result synthetic.
+  SPEECHACE_API_KEY           Required for speechace. Never printed.
+  PA_SYNTHETIC_RESPONSE_FILE  Azure test seam only. Does not call Azure and marks the result synthetic.
+  PA_SPEECHACE_RESPONSE_FILE  Speechace test seam only. Does not call Speechace and marks the result synthetic.
 `;
 
 interface CliArgs {
@@ -43,6 +49,7 @@ interface CliArgs {
   phonemeAlphabet?: PhonemeAlphabet;
   enableProsody?: boolean;
   timeoutMs?: number;
+  provider?: ScoringProvider;
 }
 
 export async function runCli(
@@ -74,6 +81,7 @@ export async function runCli(
         phonemeAlphabet: args.phonemeAlphabet,
         enableProsody: args.enableProsody,
         timeoutMs: args.timeoutMs,
+        provider: args.provider,
       },
       env,
       stdout,
@@ -138,6 +146,15 @@ function parseCliArgs(argv: string[]): CliArgs {
         throw new AssessmentError("INVALID_INPUT", "Phoneme alphabet must be IPA or SAPI.");
       }
       parsed.phonemeAlphabet = assignOnce(parsed.phonemeAlphabet, value, "--phoneme-alphabet");
+      index += 1;
+      continue;
+    }
+    if (arg === "--provider") {
+      const value = readValue(args, index, arg);
+      if (value !== "azure" && value !== "speechace") {
+        throw new AssessmentError("INVALID_INPUT", "Provider must be azure or speechace.");
+      }
+      parsed.provider = assignOnce(parsed.provider, value, "--provider");
       index += 1;
       continue;
     }

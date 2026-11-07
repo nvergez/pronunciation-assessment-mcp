@@ -5,14 +5,34 @@ import { AssessmentError } from "./errors.js";
 import { diagnostic } from "./log.js";
 import { presentResult, toErrorBody, writeResult } from "./output.js";
 import { secretsFromEnv } from "./redact.js";
+import { unusedSpeechBackend } from "./speechace.js";
 import { createSyntheticBackend } from "./synthetic-backend.js";
-import type { AssessInput, IntegrationSmoke } from "./types.js";
+import type { AssessInput, IntegrationSmoke, ScoringProvider } from "./types.js";
+
+export function selectedProvider(input: { provider?: ScoringProvider | undefined }): ScoringProvider {
+  return input.provider ?? "azure";
+}
+
+export function fixtureEnabled(env: NodeJS.ProcessEnv, provider: ScoringProvider = "azure"): boolean {
+  const name = provider === "speechace" ? "PA_SPEECHACE_RESPONSE_FILE" : "PA_SYNTHETIC_RESPONSE_FILE";
+  return Boolean(env[name]?.trim());
+}
 
 export async function assessWithEnv(
   input: AssessInput,
   env: NodeJS.ProcessEnv,
   stderr: Writable,
 ) {
+  const provider = selectedProvider(input);
+  if (provider === "speechace") {
+    const fixture = fixtureEnabled(env, "speechace");
+    return assessPronunciation(input, {
+      env,
+      stderr,
+      mode: fixture ? "synthetic" : "speechace",
+      backend: unusedSpeechBackend(),
+    });
+  }
   const syntheticPath = env.PA_SYNTHETIC_RESPONSE_FILE?.trim() ?? "";
   return assessPronunciation(input, {
     env,
@@ -30,7 +50,7 @@ export async function executeAssessment(options: {
   integrationSmoke?: IntegrationSmoke | undefined;
 }): Promise<number> {
   const secrets = secretsFromEnv(options.env);
-  const synthetic = Boolean(options.env.PA_SYNTHETIC_RESPONSE_FILE?.trim());
+  const synthetic = fixtureEnabled(options.env, selectedProvider(options.input));
   try {
     const body = await assessWithEnv(options.input, options.env, options.stderr);
     writeResult(options.stdout, presentResult(body, options.integrationSmoke), secrets);
